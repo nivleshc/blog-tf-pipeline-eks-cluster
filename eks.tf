@@ -10,6 +10,8 @@ resource "aws_eks_cluster" "eks_cluster" {
     ]
   }
 
+  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_AmazonEKSClusterPolicy,
     aws_iam_role_policy_attachment.eks_cluster_AmazonEKSVPCResourceController,
@@ -42,10 +44,24 @@ resource "aws_eks_node_group" "eks_node_group" {
   ]
 }
 
+data "tls_certificate" "eks_cluster" {
+  url = aws_eks_cluster.eks_cluster.identity.0.oidc.0.issuer
+}
+
+resource "aws_iam_openid_connect_provider" "eks_cluster" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.eks_cluster.certificates.0.sha1_fingerprint]
+  url             = aws_eks_cluster.eks_cluster.identity.0.oidc.0.issuer
+}
+
+output "eks_cluster_name" {
+  value = aws_eks_cluster.eks_cluster.name
+}
+
 output "eks_endpoint" {
   value = aws_eks_cluster.eks_cluster.endpoint
 }
 
-output "kubeconfig-certificate-authority-data" {
+output "eks_certificate_authority" {
   value = aws_eks_cluster.eks_cluster.certificate_authority[0].data
 }
