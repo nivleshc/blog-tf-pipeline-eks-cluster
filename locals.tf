@@ -26,4 +26,25 @@ locals {
   }
 
   eks_node_group_sg_name = "${local.eks_node_group.name}-sg"
+
+  ingress_alb_controller = {
+    name      = "aws-load-balancer-controller"
+    namespace = "kube-system"
+
+    helm = {
+      repository = "https://aws.github.io/eks-charts"
+      chart = {
+        name    = "aws-load-balancer-controller"
+        version = "1.5.4"
+
+        values = {
+          clusterName           = aws_eks_cluster.eks_cluster.name
+          serviceAccount_name   = "aws-load-balancer-controller"
+          serviceAccount_create = "false"
+          vpcId                 = aws_vpc.eks_cluster_vpc.id
+          region                = "ap-southeast-2"
+        }
+      }
+    }
+  }
 }

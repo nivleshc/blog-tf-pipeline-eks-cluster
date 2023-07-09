@@ -26,7 +26,8 @@ resource "aws_subnet" "eks_cluster_vpc_public_subnets" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "public-subnet${count.index}-${data.aws_availability_zones.available.zone_ids[count.index]}"
+    Name                     = "public-subnet${count.index}-${data.aws_availability_zones.available.zone_ids[count.index]}"
+    "kubernetes.io/role/elb" = 1
   }
 }
 
@@ -38,7 +39,8 @@ resource "aws_subnet" "eks_cluster_vpc_private_subnets" {
   vpc_id            = aws_vpc.eks_cluster_vpc.id
 
   tags = {
-    Name = "private-subnet${count.index}-${data.aws_availability_zones.available.zone_ids[count.index]}"
+    Name                              = "private-subnet${count.index}-${data.aws_availability_zones.available.zone_ids[count.index]}"
+    "kubernetes.io/role/internal-elb" = 1
   }
 }
 
