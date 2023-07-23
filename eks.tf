@@ -54,6 +54,16 @@ resource "aws_iam_openid_connect_provider" "eks_cluster" {
   url             = aws_eks_cluster.eks_cluster.identity.0.oidc.0.issuer
 }
 
+resource "aws_eks_addon" "aws_ebs_csi_driver" {
+  cluster_name             = aws_eks_cluster.eks_cluster.name
+  addon_name               = local.amazoneks_ebs_csi_controller.addon_name
+  service_account_role_arn = aws_iam_role.amazoneks_ebs_csi_driver_role.arn
+
+  depends_on = [
+    aws_eks_cluster.eks_cluster
+  ]
+}
+
 output "eks_cluster_name" {
   value = aws_eks_cluster.eks_cluster.name
 }
