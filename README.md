@@ -14,6 +14,9 @@ The following resources will be created using the code in this repository
 - 1 NAT Gateway
 - 1 route table (public)
 - 1 Amazon EKS cluster with a node group
+- Prometheus microservice deployment inside the Amazon EKS cluster
+- Grafana microservice deployment inside the Amazon EKS cluster
+- Grafana dashboard deployment to display Amazon EKS cluster monitoring statistics
 
 ## High Level Architecture
 Below is the high level architecture diagram for the solution. The resources in the pink rectangle will be created using the code in this repository.

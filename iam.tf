@@ -329,3 +329,35 @@ resource "aws_iam_role_policy" "aws_load_balancer_controller" {
 }
 EOF
 }
+
+resource "aws_iam_role" "amazoneks_ebs_csi_driver_role" {
+  name = "${var.env}-${local.amazoneks_ebs_csi_controller.role_name_suffix}"
+
+  assume_role_policy = jsonencode({
+    Version : "2012-10-17",
+    Statement : [
+      {
+        Effect : "Allow",
+        Condition : {
+          StringEquals : {
+            "${replace(aws_eks_cluster.eks_cluster.identity[0].oidc[0].issuer, "https://", "")}:aud" : "sts.amazonaws.com",
+            "${replace(aws_eks_cluster.eks_cluster.identity[0].oidc[0].issuer, "https://", "")}:sub" : "system:serviceaccount:${local.amazoneks_ebs_csi_controller.namespace}:${local.amazoneks_ebs_csi_controller.service_account_name}"
+          }
+        },
+        Principal : {
+          Federated : "${aws_iam_openid_connect_provider.eks_cluster.arn}"
+        },
+        Action : "sts:AssumeRoleWithWebIdentity"
+      }
+    ]
+  })
+}
+
+data "aws_iam_policy" "amazon_ebs_csi_driver_policy" {
+  arn = local.amazoneks_ebs_csi_controller.aws_managed_policy_arn
+}
+
+resource "aws_iam_role_policy_attachment" "amazoneks_ebs_csi_driver_role_policy_attach" {
+  role       = aws_iam_role.amazoneks_ebs_csi_driver_role.id
+  policy_arn = data.aws_iam_policy.amazon_ebs_csi_driver_policy.arn
+}
